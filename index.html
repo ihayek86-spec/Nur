@@ -1,1 +1,429 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مواقيت الصلاة - شاشة المسجد</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+
+body{
+  font-family:"Tajawal",sans-serif;
+  margin:0;
+  background:linear-gradient(120deg,#A8E6CF,#ffffff);
+  color:#1B5E20;
+}
+
+/* ================= HEADER ================= */
+.header{
+  position:relative;
+  padding:40px 20px 20px 20px;
+  text-align:center;
+}
+
+.main-title{
+  text-align:center;
+  margin-top:10px;
+}
+
+.main-title .ar{
+  font-size:3.5vw;
+  font-weight:900;
+}
+
+.main-title .da{
+  font-size:1.8vw;
+  margin-top:5px;
+  font-weight:600;
+  color:#2E7D32;
+}
+
+/* ====== RIGHT (اسم المسجد) ====== */
+.right-section{
+  position:absolute;
+  top:30px;
+  right:40px;
+  text-align:right;
+  max-width:420px;
+}
+
+/* ====== LEFT (الساعة والتاريخ) ====== */
+.left-section{
+  position:absolute;
+  top:30px;
+  left:40px;
+  text-align:left;
+  font-size:1.5vw;
+  color:#0D3B12;
+}
+
+.left-section #clock{
+  font-size:2vw;
+  font-weight:bold;
+}
+
+#ramadan-day{
+  margin-top:5px;
+  font-weight:bold;
+}
+
+.mosque-info{
+  padding:15px 25px;
+  border:3px solid #C6A756;
+  border-radius:15px;
+  background:rgba(255,255,255,0.7);
+  box-shadow:0 0 25px rgba(198,167,86,0.6);
+}
+
+.mosque-name-ar{
+  font-size:2.6vw;
+  font-weight:900;
+  color:#0D3B12;
+}
+
+.mosque-name-da{
+  font-size:1.4vw;
+  margin-top:5px;
+  font-weight:600;
+}
+
+.datetime{
+  margin-top:15px;
+  font-size:1.5vw;
+  color:#0D3B12;
+}
+
+/* ================= NEXT PRAYER ROW ================= */
+.next-prayer-row{
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 40px;
+}
+
+.next-prayer-row .box{
+  flex: 1;
+  min-height: 100px;
+  background: #388E3C;
+  color: white;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8vw;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.next-prayer-row .box#next-prayer{
+  font-size: 2vw;
+  font-weight: bold;
+}
+
+/* ================= GRID ================= */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:20px;
+  padding:20px 40px;
+}
+
+.timebox{
+  background:#388E3C;
+  color:white;
+  padding:25px;
+  border-radius:20px;
+  font-size:1.8vw;
+  text-align:center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height:150px; /* ارتفاع ثابت لجميع المربعات */
+  box-sizing: border-box;
+}
+
+.timebox small{
+  display:block;
+  white-space: nowrap; /* اسم الصلاة على سطر واحد */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size:1.2vw;
+}
+
+.timebox strong{
+  display:block;
+  font-size:2.8vw;
+  margin-top:10px;
+}
+
+/* ================= QR SECTION ================= */
+.qr-section{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 60px 40px 60px;
+}
+
+.qr-box{
+  text-align:center;
+}
+
+.qr-box img{
+  width:140px;
+  height:140px;
+  background:white;
+  padding:10px;
+  border-radius:15px;
+  box-shadow:0 0 15px rgba(0,0,0,0.2);
+}
+
+.qr-box p{
+  margin-top:10px;
+  font-size:1.2vw;
+}
+
+/* ================= BLINK EFFECT ================= */
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+  <!-- العنوان في الوسط -->
+  <div class="main-title">
+    <div class="ar">مواقيت الصلاة</div>
+    <div class="da">Bønnetider</div>
+  </div>
+
+  <!-- اسم المسجد في اليمين -->
+  <div class="right-section">
+    <div class="mosque-info">
+      <div class="mosque-name-ar">مسجد نور الإسلام</div>
+      <div class="mosque-name-da">Nour-ul-Islam Center og Moské</div>
+    </div>
+  </div>
+
+  <!-- الساعة والتاريخ في اليسار -->
+  <div class="left-section">
+    <div id="clock">00:00:00</div>
+    <div id="date"></div>
+    <div id="ramadan-day"></div>
+  </div>
+
+</div>
+
+<!-- ================= ROW OF 3 BOXES ================= -->
+<div class="next-prayer-row">
+  <div class="box" id="current-prayer">—</div>
+  <div class="box" id="next-prayer">—</div>
+  <div class="box">—</div>
+</div>
+
+<div class="grid">
+  <div class="timebox"><small>الإمساك / Imsak</small><strong id="imsak">—</strong></div>
+  <div class="timebox"><small>الفجر / Fajr</small><strong id="fajr">—</strong></div>
+  <div class="timebox"><small>الشروق / Sunrise</small><strong id="sunrise">—</strong></div>
+  <div class="timebox"><small>الظهر / Dhuhr</small><strong id="dhuhr">—</strong></div>
+  <div class="timebox"><small>العصر / Asr</small><strong id="asr">—</strong></div>
+  <div class="timebox"><small>المغرب / Maghrib</small><strong id="maghrib">—</strong></div>
+  <div class="timebox"><small>العشاء / Isha</small><strong id="isha">—</strong></div>
+</div>
+
+<div class="qr-section">
+  <div class="qr-box">
+    <img src="qr1.png" alt="QR 1">
+    <p>تبرع للمسجد</p>
+  </div>
+  <div class="qr-box">
+    <img src="qr2.png" alt="QR 2">
+    <p>تابعنا على الموقع</p>
+  </div>
+</div>
+
+<script>
+// ===============================
+// RAMADAN 2026 – COPENHAGEN
+// ===============================
+const ramadanStart = new Date("2026-02-18");
+
+const ramadan2026 = [
+{day:1, imsak:"05:06", fajr:"05:31", sunrise:"07:29", dhuhr:"12:25", asr:"14:47", maghrib:"17:26", isha:"18:52"},
+{day:2, imsak:"05:04", fajr:"05:29", sunrise:"07:26", dhuhr:"12:25", asr:"14:49", maghrib:"17:28", isha:"18:54"},
+{day:3, imsak:"05:02", fajr:"05:27", sunrise:"07:24", dhuhr:"12:25", asr:"14:50", maghrib:"17:30", isha:"18:56"},
+{day:4, imsak:"05:00", fajr:"05:25", sunrise:"07:22", dhuhr:"12:25", asr:"14:51", maghrib:"17:32", isha:"18:58"},
+{day:5, imsak:"04:58", fajr:"05:23", sunrise:"07:19", dhuhr:"12:25", asr:"14:53", maghrib:"17:34", isha:"19:00"},
+{day:6, imsak:"04:55", fajr:"05:20", sunrise:"07:17", dhuhr:"12:25", asr:"14:55", maghrib:"17:37", isha:"19:02"},
+{day:7, imsak:"04:53", fajr:"05:18", sunrise:"07:14", dhuhr:"12:24", asr:"14:57", maghrib:"17:39", isha:"19:04"},
+{day:8, imsak:"04:51", fajr:"05:16", sunrise:"07:12", dhuhr:"12:24", asr:"14:58", maghrib:"17:41", isha:"19:06"},
+{day:9, imsak:"04:49", fajr:"05:14", sunrise:"07:10", dhuhr:"12:24", asr:"15:00", maghrib:"17:43", isha:"19:08"},
+{day:10, imsak:"04:47", fajr:"05:12", sunrise:"07:07", dhuhr:"12:24", asr:"15:01", maghrib:"17:45", isha:"19:10"},
+{day:11, imsak:"04:45", fajr:"05:10", sunrise:"07:05", dhuhr:"12:24", asr:"15:03", maghrib:"17:47", isha:"19:12"},
+{day:12, imsak:"04:42", fajr:"05:07", sunrise:"07:01", dhuhr:"12:24", asr:"15:04", maghrib:"17:49", isha:"19:14"},
+{day:13, imsak:"04:39", fajr:"05:04", sunrise:"06:59", dhuhr:"12:24", asr:"15:06", maghrib:"17:51", isha:"19:16"},
+{day:14, imsak:"04:36", fajr:"05:01", sunrise:"06:57", dhuhr:"12:24", asr:"15:07", maghrib:"17:53", isha:"19:18"},
+{day:15, imsak:"04:33", fajr:"04:58", sunrise:"06:54", dhuhr:"12:24", asr:"15:09", maghrib:"17:56", isha:"19:20"},
+{day:16, imsak:"04:30", fajr:"04:55", sunrise:"06:52", dhuhr:"12:24", asr:"15:10", maghrib:"17:58", isha:"19:22"},
+{day:17, imsak:"04:27", fajr:"04:52", sunrise:"06:49", dhuhr:"12:23", asr:"15:12", maghrib:"18:00", isha:"19:24"},
+{day:18, imsak:"04:25", fajr:"04:50", sunrise:"06:47", dhuhr:"12:23", asr:"15:13", maghrib:"18:02", isha:"19:26"},
+{day:19, imsak:"04:22", fajr:"04:47", sunrise:"06:45", dhuhr:"12:23", asr:"15:14", maghrib:"18:04", isha:"19:29"},
+{day:20, imsak:"04:19", fajr:"04:44", sunrise:"06:42", dhuhr:"12:23", asr:"15:16", maghrib:"18:06", isha:"19:31"},
+{day:21, imsak:"04:17", fajr:"04:42", sunrise:"06:39", dhuhr:"12:23", asr:"15:17", maghrib:"18:08", isha:"19:33"},
+{day:22, imsak:"04:14", fajr:"04:39", sunrise:"06:37", dhuhr:"12:23", asr:"15:19", maghrib:"18:10", isha:"19:35"},
+{day:23, imsak:"04:11", fajr:"04:36", sunrise:"06:34", dhuhr:"12:22", asr:"15:20", maghrib:"18:12", isha:"19:37"},
+{day:24, imsak:"04:08", fajr:"04:33", sunrise:"06:31", dhuhr:"12:22", asr:"15:21", maghrib:"18:14", isha:"19:39"},
+{day:25, imsak:"04:05", fajr:"04:30", sunrise:"06:29", dhuhr:"12:21", asr:"15:23", maghrib:"18:16", isha:"19:41"},
+{day:26, imsak:"04:02", fajr:"04:27", sunrise:"06:26", dhuhr:"12:21", asr:"15:24", maghrib:"18:18", isha:"19:43"},
+{day:27, imsak:"03:59", fajr:"04:24", sunrise:"06:24", dhuhr:"12:21", asr:"15:26", maghrib:"18:20", isha:"19:45"},
+{day:28, imsak:"03:57", fajr:"04:22", sunrise:"06:21", dhuhr:"12:21", asr:"15:28", maghrib:"18:22", isha:"19:48"},
+{day:29, imsak:"03:54", fajr:"04:19", sunrise:"06:18", dhuhr:"12:21", asr:"15:29", maghrib:"18:24", isha:"19:50"},
+{day:30, imsak:"03:51", fajr:"04:16", sunrise:"06:16", dhuhr:"12:21", asr:"15:30", maghrib:"18:26", isha:"19:52"}
+];
+
+// ===============================
+
+function getRamadanDay(){
+  const today=new Date();
+  return Math.floor((today-ramadanStart)/(1000*60*60*24))+1;
+}
+
+function loadToday(){
+  const day=getRamadanDay();
+  const data=ramadan2026.find(d=>d.day===day);
+  if(!data) return null;
+
+  document.getElementById("ramadan-day").innerText="رمضان "+day+" / Ramadan "+day;
+
+  Object.keys(data).forEach(k=>{
+    if(k!=="day") document.getElementById(k).innerText=data[k];
+  });
+
+  return data;
+}
+
+let todayData=loadToday();
+
+function parseTime(t){
+  const m=/^(\d+):(\d+)$/.exec(t);
+  const d=new Date();
+  d.setHours(+m[1],+m[2],0,0);
+  return d;
+}
+
+// ===============================
+// CLOCK + NEXT PRAYER + CURRENT/IQAMA
+// ===============================
+function updateClock(){
+  const now=new Date();
+
+  document.getElementById("clock").innerText=now.toLocaleTimeString("da-DK");
+  document.getElementById("date").innerText=now.toLocaleDateString("da-DK",{
+    weekday:"long",
+    year:"numeric",
+    month:"long",
+    day:"numeric"
+  });
+
+  if(!todayData) return;
+
+  // ======== NEXT PRAYER ========
+  let next=null;
+  let nextPrayerName=null;
+  ["fajr","dhuhr","asr","maghrib","isha"].forEach(p=>{
+    const t=parseTime(todayData[p]);
+    if(t>now && (!next || t<next)){
+      next=t;
+      nextPrayerName=p;
+    }
+  });
+
+  if(next && nextPrayerName){
+    let diff=Math.floor((next-now)/1000);
+    const h=Math.floor(diff/3600); diff-=h*3600;
+    const m=Math.floor(diff/60); diff-=m*60;
+    const s=diff;
+
+    const prayerNamesAr = {
+      fajr:"الفجر",
+      dhuhr:"الظهر",
+      asr:"العصر",
+      maghrib:"المغرب",
+      isha:"العشاء"
+    };
+
+    document.getElementById("next-prayer").innerText=
+      "الوقت المتبقي لـ "+prayerNamesAr[nextPrayerName]+" : "+
+      `${h.toString().padStart(2,"0")}:`+
+      `${m.toString().padStart(2,"0")}:`+
+      `${s.toString().padStart(2,"0")}`;
+  }
+
+  // ======== CURRENT PRAYER + IQAMA ========
+  const prayerNamesArFull = {
+    fajr: "صلاة الفجر",
+    dhuhr: "صلاة الظهر",
+    asr: "صلاة العصر",
+    maghrib: "صلاة المغرب",
+    isha: "صلاة العشاء"
+  };
+
+  const currentBox = document.getElementById("current-prayer");
+  let current = null;
+  const prayers = ["fajr","dhuhr","asr","maghrib","isha"];
+
+  for(let i=0;i<prayers.length;i++){
+    const p=prayers[i];
+    const t=parseTime(todayData[p]);
+    let nextP=(i<prayers.length-1)?parseTime(todayData[prayers[i+1]]):new Date(t.getTime()+24*60*60*1000);
+    if(now>=t && now<nextP){
+      current=p;
+      break;
+    }
+  }
+
+  if(current){
+    const iqamaTime = new Date(parseTime(todayData[current]).getTime() + 20*60*1000);
+    let diffSec = Math.floor((iqamaTime-now)/1000);
+
+    if(diffSec>0){
+      const h=Math.floor(diffSec/3600); diffSec-=h*3600;
+      const m=Math.floor(diffSec/60); diffSec-=m*60;
+      const s=diffSec;
+      currentBox.innerText = `${prayerNamesArFull[current]} Iqamah efter: `+
+                             `${h.toString().padStart(2,"0")}:`+
+                             `${m.toString().padStart(2,"0")}:`+
+                             `${s.toString().padStart(2,"0")}`;
+      currentBox.classList.remove("blink");
+    } else if(diffSec<=0 && diffSec>-60){
+      currentBox.innerText = "Iqamah nu";
+      currentBox.classList.add("blink");
+    } else{
+      currentBox.innerText = "—";
+      currentBox.classList.remove("blink");
+    }
+
+  } else{
+    currentBox.innerText = "—";
+    currentBox.classList.remove("blink");
+  }
+}
+
+setInterval(updateClock,1000);
+setInterval(()=>{ todayData=loadToday(); },60000);
+
+</script>
+
+</body>
+</html>
 
